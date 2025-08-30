@@ -1,0 +1,241 @@
+Build a production-ready, responsive, multi-language (FR default, also AR and EN) landing + signup web app for InnoVision School (technology institute). Use glassmorphism + subtle micro-interactions and Framer-Motion-style animations. Theme must match the logo colors (primary deep blue + light blue accents + warm yellow highlights). Use accessible contrast and large tap targets. Performance budget: Lighthouse ≥ 90 on Performance/Accessibility/SEO.
+
+Brand
+
+Name: InnoVision School
+
+Address: Blida, Rue Mohamed Ouali, Blida
+
+Logo: use the provided file WhatsApp Image 2025-08-22 at 02.00.02_ed381a7c.jpg (centered SVG/PNG placeholder if missing).
+
+Palette (derived from logo; adjust if the tool can sample colors):
+
+Deep Blue #0F4C81, Light Blue #35A7FF, Midnight #0B2B43, Accent Yellow #FFC93C, Glass White rgba(255,255,255,0.2) with backdrop-filter: blur(16px).
+
+Typography: modern, geometric sans (e.g., Inter or Poppins); Arabic should use a clean, readable Naskh or Neo-grotesk Arabic (e.g., Cairo).
+
+Pages/Sections
+
+Landing (one page)
+
+Hero with glass card: Logo, headline in FR (default): “Inscription ouverte — École de technologies InnoVision”. Subheadline: short value prop. CTA buttons: “S’inscrire” + “Télécharger la brochure (PDF)”.
+
+Animated background (gradient or particle field) with 60fps; parallax on scroll; prefers-reduced-motion respected.
+
+Features grid (cards, glassmorphism): Robotics, Cybersecurity, AI, 3D Printing, Web/Mobile, Video, Design.
+
+“Pourquoi nous ?” stats row (placement rate, years, students).
+
+Form section (see Smart Form spec below).
+
+Testimonials carousel (optional) and FAQ accordion.
+
+Footer with contact + social icons.
+
+Admin (protected)
+
+/admin/login (email/password).
+
+/admin/dashboard: KPIs, charts, table of signups, filters/export.
+
+Smart Form (Inscription)
+
+Fields (FR labels by default; show EN/AR based on selected language):
+
+Nom & Prénom (text, required)
+
+Email (email, required, format validation)
+
+Date de naissance (date picker, required)
+
+Wilaya (select, required) — include all 58 wilayas (see list below)
+
+Numéro de téléphone (required, Algerian format +213 / 0X)
+
+Formation choisie (dynamic select, required)
+
+Dynamic logic:
+
+When Date de naissance is filled, compute age (today – date).
+
+If age between 8 and 17 (inclusive): show formations = Kids + Both.
+
+If age ≥ 18: show formations = Adults + Both.
+
+Else (age < 8): disable submit with helper text “Âge minimum 8 ans.”
+
+Formations
+
+Kids (8–17)
+
+ربوتيك و برمجة للصغار
+
+تصميم الرسومات المتحركة الثلاثية الابعاد للصغار (3D Animations)
+
+تطوير الالعاب الالكترونية للصغار (Video Games)
+
+تطوير مواقع و تطبيقات الواب
+
+تطوير تطبيقات الهاتف
+
+نادي الشطرنج
+
+Adults (18+)
+
+شبكات الإعلام الآلي و الأمن السيبراني + التحضير لشهادة CISCO
+
+الإعلام الآلي المكتبي (Bureautique)
+
+بايثون و ذكاء اصطناعي
+
+أردوينو و برمجة المشاريع الالكترونية
+
+الطباعة الثلاثية الأبعاد
+
+Both (All ages)
+
+تطوير مواقع و تطبيقات الواب
+
+تطوير تطبيقات الهاتف
+
+مونتاج الفيديوهات (Video Editing)
+
+التصميم الجرافيكي (Graphic Design)
+
+نادي الشطرنج
+
+Validation UX: inline validation, disable submit until valid, loading state on submit, success toast.
+
+On Submit (Automation)
+
+Persist the signup in database.
+
+Generate a nicely designed PDF “Fiche d’inscription” (A4, bilingual header FR/AR):
+
+Header: InnoVision School logo + name + address.
+
+Applicant data: Nom & Prénom, Email, Date de naissance, Âge, Wilaya, Téléphone, Formation choisie, Timestamp, Application ID.
+
+Footer: Contacts + social links.
+
+Visual style matches site (blue/yellow, subtle dividers, QR code with Application ID).
+
+Present Download PDF button and also email the PDF to the applicant (and BCC admin).
+
+Show confirmation screen with next steps and WhatsApp/phone CTA.
+
+Contact & Social (Footer + Contact card)
+
+Facebook: https://www.facebook.com/profile.php?id=61551887724810
+
+TikTok: https://www.tiktok.com/@innovision01
+
+Instagram: https://www.instagram.com/inno.vision09/
+
+Email: busvision3@gmail.com
+
+Phone: 0797 61 69 44
+
+Admin Panel (Protected)
+
+Login (rate-limited, remember-me, CSRF).
+
+Dashboard KPIs: total signups, today/this week, conversion rate.
+
+Charts:
+
+Pie/Bar: Most chosen formations.
+
+Choropleth or bar: Signups by Wilaya.
+
+Line: Signups over time.
+
+Table (Signups) with search, filters (age group, formation, wilaya, date range), sorting, pagination.
+
+Row actions: view, regenerate PDF, resend email, export CSV/PDF.
+
+Settings: manage formations labels per language, add/remove formations, toggle admissions window.
+
+Theme consistent with public site (glass cards, soft shadows), dark mode toggle.
+
+Internationalization (i18n)
+
+Languages: FR (default), AR (RTL), EN.
+
+Language switcher in navbar; persist choice.
+
+All static strings and formation names localized.
+
+Proper RTL layout for Arabic; mirrored animations.
+
+Tech/Implementation (suggested, adapt if tool needs)
+
+Next.js / React + Tailwind + Framer Motion; i18next (or Next-i18n-router).
+
+Forms: React Hook Form + Zod.
+
+PDF: pdfmake or jsPDF + autotable; embed logo and QR.
+
+DB: SQLite/Postgres via Prisma (or tool’s datastore).
+
+Auth: NextAuth/email-password.
+
+Charts: Recharts.
+
+Icons: Lucide.
+
+SEO: meta tags, OG image, sitemap, robots, structured data (Organization, LocalBusiness).
+
+Accessibility: focus styles, keyboard nav, ARIA, reduced motion.
+
+Wilaya (58) — use as select options
+
+Adrar, Chlef, Laghouat, Oum El Bouaghi, Batna, Bejaïa, Biskra, Béchar, Blida, Bouira, Tamanrasset, Tébessa, Tlemcen, Tiaret, Tizi Ouzou, Alger, Djelfa, Jijel, Sétif, Saïda, Skikda, Sidi Bel Abbès, Annaba, Guelma, Constantine, Médéa, Mostaganem, M’Sila, Mascara, Ouargla, Oran, El Bayadh, Illizi, Bordj Bou Arreridj, Boumerdès, El Tarf, Tindouf, Tissemsilt, El Oued, Khenchela, Souk Ahras, Tipaza, Mila, Aïn Defla, Naâma, Aïn Témouchent, Ghardaïa, Relizane, Timimoun, Bordj Badji Mokhtar, Ouled Djellal, Béni Abbès, In Salah, In Guezzam, Touggourt, Djanet, El M’Ghair, El Meniaa.
+
+Extra UX/Polish
+
+Glass cards (blur 16–20px, border 1px solid rgba(255,255,255,0.18), rounded-2xl, shadow-xl).
+
+Subtle hover float/scale for cards and buttons.
+
+Skeleton loaders for form and dashboard.
+
+Error boundaries and friendly error screens.
+
+PWA basics: installable, offline shell for landing.
+
+Data Model (minimum)
+Applicant {
+  id (uuid)
+  fullName
+  email
+  birthDate
+  age (computed)
+  wilaya
+  phone
+  track (formation)
+  createdAt
+  pdfUrl
+  locale
+}
+AdminUser { id, email, passwordHash, role }
+
+Security
+
+Server-side validation, rate limiting (5/min/IP), captcha on abuse.
+
+Store files with unique IDs; signed URLs for PDF.
+
+Sanitize all inputs; prevent i18n path traversal.
+
+GDPR-style consent checkbox for storing data.
+
+Deliverables:
+
+Fully functional responsive site with landing + form + PDF generation + email.
+
+Admin login + dashboard with charts and data table.
+
+i18n (FR/AR/EN) wired; FR as default; Arabic RTL correctly mirrored.
+
+Deployed preview and exportable project files.
