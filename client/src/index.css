@@ -1,0 +1,244 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* InnoVision Brand Colors */
+  --primary: hsl(205, 100%, 28%); /* Deep Blue #0F4C81 */
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(204, 100%, 59%); /* Light Blue #35A7FF */
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --accent: hsl(45, 100%, 62%); /* Yellow #FFC93C */
+  --accent-foreground: hsl(205, 100%, 28%);
+  --midnight: hsl(210, 100%, 16%); /* Midnight #0B2B43 */
+  
+  /* UI Colors */
+  --background: hsl(210, 40%, 98%);
+  --foreground: hsl(222.2, 84%, 4.9%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(222.2, 84%, 4.9%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(222.2, 84%, 4.9%);
+  --muted: hsl(210, 40%, 96%);
+  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --border: hsl(214.3, 31.8%, 91.4%);
+  --input: hsl(214.3, 31.8%, 91.4%);
+  --ring: hsl(205, 100%, 28%);
+  
+  /* Glass Variables */
+  --glass-bg: rgba(255, 255, 255, 0.2);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-dark-bg: rgba(15, 76, 129, 0.1);
+  --glass-dark-border: rgba(255, 255, 255, 0.1);
+  
+  /* Typography */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-arabic: 'Cairo', system-ui, sans-serif;
+  
+  /* Design System */
+  --radius: 16px;
+  --shadow-2xs: 0px 2px 0px 0px hsl(205, 100%, 28%, 0.05);
+  --shadow-xs: 0px 2px 0px 0px hsl(205, 100%, 28%, 0.05);
+  --shadow-sm: 0px 2px 0px 0px hsl(205, 100%, 28%, 0.05), 0px 1px 2px -1px hsl(205, 100%, 28%, 0.1);
+  --shadow: 0px 2px 0px 0px hsl(205, 100%, 28%, 0.05), 0px 1px 2px -1px hsl(205, 100%, 28%, 0.1);
+  --shadow-md: 0px 2px 0px 0px hsl(205, 100%, 28%, 0.05), 0px 2px 4px -1px hsl(205, 100%, 28%, 0.1);
+  --shadow-lg: 0px 2px 0px 0px hsl(205, 100%, 28%, 0.05), 0px 4px 6px -1px hsl(205, 100%, 28%, 0.1);
+  --shadow-xl: 0px 2px 0px 0px hsl(205, 100%, 28%, 0.05), 0px 8px 10px -1px hsl(205, 100%, 28%, 0.15);
+  --shadow-2xl: 0px 2px 0px 0px hsl(205, 100%, 28%, 0.05), 0px 16px 20px -1px hsl(205, 100%, 28%, 0.2);
+}
+
+.dark {
+  --background: hsl(210, 100%, 16%);
+  --foreground: hsl(200, 6.7%, 91.2%);
+  --card: hsl(228, 9.8%, 10%);
+  --card-foreground: hsl(0, 0%, 85.1%);
+  --popover: hsl(210, 100%, 16%);
+  --popover-foreground: hsl(200, 6.7%, 91.2%);
+  --muted: hsl(0, 0%, 9.4%);
+  --muted-foreground: hsl(210, 3.4%, 46.3%);
+  --border: hsl(210, 5.3%, 14.9%);
+  --input: hsl(207.7, 27.7%, 18.4%);
+  --ring: hsl(204, 100%, 59%);
+}
+
+/* RTL Support */
+[dir="rtl"] {
+  --font-sans: var(--font-arabic);
+}
+
+[dir="rtl"] .transform {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .rotate-45 {
+  transform: scaleX(-1) rotate(45deg);
+}
+
+/* Glassmorphism Classes */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-dark {
+  background: var(--glass-dark-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-dark-border);
+}
+
+/* Gradient Backgrounds */
+.gradient-bg {
+  background: linear-gradient(135deg, hsl(205, 100%, 28%) 0%, hsl(204, 100%, 59%) 50%, hsl(45, 100%, 62%) 100%);
+}
+
+.hero-gradient {
+  background: linear-gradient(135deg, 
+    hsl(205, 100%, 28%) 0%, 
+    hsl(210, 100%, 35%) 25%,
+    hsl(204, 100%, 59%) 50%,
+    hsl(200, 100%, 65%) 75%,
+    hsl(45, 100%, 62%) 100%);
+}
+
+/* Custom Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 20px rgba(255, 201, 60, 0.4); }
+  to { box-shadow: 0 0 30px rgba(255, 201, 60, 0.6); }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px hsl(45, 100%, 62%), 0 0 10px hsl(45, 100%, 62%), 0 0 15px hsl(45, 100%, 62%); }
+  50% { box-shadow: 0 0 10px hsl(45, 100%, 62%), 0 0 20px hsl(45, 100%, 62%), 0 0 30px hsl(45, 100%, 62%); }
+}
+
+/* Animation Classes */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Parallax */
+.parallax-bg {
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-glow,
+  .animate-slide-up,
+  .animate-fade-in,
+  .animate-pulse-glow {
+    animation: none;
+  }
+  .parallax-bg {
+    background-attachment: scroll;
+  }
+}
+
+/* Typography */
+.font-arabic {
+  font-family: var(--font-arabic);
+}
+
+/* Focus Styles for Accessibility */
+.focus-visible:focus-visible {
+  outline: 2px solid hsl(205, 100%, 28%);
+  outline-offset: 2px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(210, 40%, 96%);
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(205, 100%, 28%);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(204, 100%, 59%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom form styling */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+  }
+
+  .dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .min-h-dvh {
+    min-height: 100dvh;
+  }
+
+  .h-dvh {
+    height: 100dvh;
+  }
+}
