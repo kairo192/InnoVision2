@@ -6,7 +6,7 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import { generatePDF } from "./services/pdf";
 import { sendEmail } from "./services/email";
-import { rateLimiter, loginRateLimiter, trackFailedLogin, resetFailedLogin } from "./middleware/security";
+import { rateLimiter, loginRateLimiter, trackFailedLogin, resetFailedLogin, enrollmentRateLimiter } from "./middleware/security";
 
 // Enhanced validation schemas
 const loginSchema = z.object({
@@ -14,14 +14,13 @@ const loginSchema = z.object({
   password: z.string().min(1, "Mot de passe requis").max(255),
 });
 
-// Different rate limits for different endpoints
-const enrollmentRateLimit = rateLimiter(5, 15 * 60 * 1000); // 5 enrollments per 15 minutes
-const adminRateLimit = rateLimiter(20, 15 * 60 * 1000); // 20 admin requests per 15 minutes  
-const pdfRateLimit = rateLimiter(10, 5 * 60 * 1000); // 10 PDF downloads per 5 minutes
+// Different rate limits for different endpoints - More lenient for better UX
+const adminRateLimit = rateLimiter(50, 15 * 60 * 1000); // 50 admin requests per 15 minutes  
+const pdfRateLimit = rateLimiter(20, 10 * 60 * 1000); // 20 PDF downloads per 10 minutes
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Enrollment endpoint with rate limiting
-  app.post("/api/enrollment", enrollmentRateLimit, async (req, res) => {
+  // Enrollment endpoint with lenient rate limiting for better UX
+  app.post("/api/enrollment", enrollmentRateLimiter, async (req, res) => {
     try {
       const validatedData = insertApplicantSchema.parse(req.body);
       
@@ -81,7 +80,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           errors: error.errors
         });
       }
-      res.status(500).json({ message: "Erreur interne du serveur" });
+      res.status(500).json({ message: "Erreur d'inscription. Veuillez réessayer." });
     }
   });
 

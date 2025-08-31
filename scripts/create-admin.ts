@@ -6,7 +6,7 @@ import { users } from '@shared/schema';
 async function createAdmin() {
   try {
     const email = 'admin@innovision.dz';
-    const password = 'admin123'; // Change this to a secure password
+    const password = 'admin123'; 
     
     console.log('Creating admin user...');
     
@@ -30,7 +30,7 @@ async function createAdmin() {
     console.log('⚠️  Please change the password after first login!');
     
   } catch (error: any) {
-    if (error.code === '23505') { // Unique constraint violation
+    if (error.code === '23505') { 
       console.log('❌ Admin user with this email already exists!');
       console.log('📧 Email: admin@innovision.dz');
       console.log('🔑 Password: admin123');

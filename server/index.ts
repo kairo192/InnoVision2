@@ -23,8 +23,8 @@ if (env.NODE_ENV === 'production') {
 app.use(securityHeaders);
 app.use(validateInput);
 
-// Dynamic rate limiting based on environment
-const maxRequests = parseInt(env.MAX_REQUESTS_PER_WINDOW || '100', 10);
+// Dynamic rate limiting based on environment - More lenient for better UX
+const maxRequests = parseInt(env.MAX_REQUESTS_PER_WINDOW || '200', 10); // Increased from 100
 const windowMs = parseInt(env.RATE_LIMIT_WINDOW_MS || '900000', 10); // 15 minutes
 app.use(rateLimiter(maxRequests, windowMs));
 
