@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
+import { Logo } from "@/components/ui/logo";
 import { useI18n } from "@/hooks/use-i18n";
-import { Lightbulb, Download } from "lucide-react";
+import { Download } from "lucide-react";
 
 export function Hero() {
   const { t } = useI18n();
@@ -33,9 +34,7 @@ export function Hero() {
             {/* Logo */}
             <div className="flex justify-center mb-6">
               <div className="relative">
-                <div className="w-20 h-20 lg:w-24 lg:h-24 bg-accent rounded-full flex items-center justify-center animate-pulse-glow">
-                  <Lightbulb className="text-white text-3xl lg:text-4xl" />
-                </div>
+                <Logo size="xl" className="animate-pulse-glow" />
                 <div className="absolute inset-0 rounded-full border-2 border-white/30"></div>
               </div>
             </div>

@@ -6,15 +6,22 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import { generatePDF } from "./services/pdf";
 import { sendEmail } from "./services/email";
+import { rateLimiter, loginRateLimiter, trackFailedLogin, resetFailedLogin } from "./middleware/security";
 
+// Enhanced validation schemas
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+  email: z.string().email("Email invalide").max(255),
+  password: z.string().min(1, "Mot de passe requis").max(255),
 });
 
+// Different rate limits for different endpoints
+const enrollmentRateLimit = rateLimiter(5, 15 * 60 * 1000); // 5 enrollments per 15 minutes
+const adminRateLimit = rateLimiter(20, 15 * 60 * 1000); // 20 admin requests per 15 minutes  
+const pdfRateLimit = rateLimiter(10, 5 * 60 * 1000); // 10 PDF downloads per 5 minutes
+
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Enrollment endpoint
-  app.post("/api/enrollment", async (req, res) => {
+  // Enrollment endpoint with rate limiting
+  app.post("/api/enrollment", enrollmentRateLimit, async (req, res) => {
     try {
       const validatedData = insertApplicantSchema.parse(req.body);
       
@@ -78,10 +85,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // PDF download endpoint
-  app.get("/api/pdf/:applicationId", async (req, res) => {
+  // PDF download endpoint with rate limiting
+  app.get("/api/pdf/:applicationId", pdfRateLimit, async (req, res) => {
     try {
       const { applicationId } = req.params;
+      
+      // Validate application ID format
+      if (!/^INV-\d+-[A-Z0-9]+$/.test(applicationId)) {
+        return res.status(400).json({ message: "ID d'application invalide" });
+      }
+      
       const applicant = await storage.getApplicantByApplicationId(applicationId);
       
       if (!applicant) {
@@ -92,6 +105,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="inscription-${applicationId}.pdf"`);
+      res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+      res.setHeader('Expires', '-1');
+      res.setHeader('Pragma', 'no-cache');
       res.send(pdfBuffer);
 
     } catch (error) {
@@ -100,31 +116,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin login
-  app.post("/api/admin/login", async (req, res) => {
+  // Admin login with enhanced security
+  app.post("/api/admin/login", loginRateLimiter, adminRateLimit, async (req, res) => {
     try {
       const { email, password } = loginSchema.parse(req.body);
+      const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
       
       const user = await storage.getUserByEmail(email);
       if (!user) {
+        trackFailedLogin(clientIp);
         return res.status(401).json({ message: "Identifiants invalides" });
       }
 
       const isValid = await bcrypt.compare(password, user.password);
       if (!isValid) {
+        trackFailedLogin(clientIp);
         return res.status(401).json({ message: "Identifiants invalides" });
       }
 
-      // Set session
-      (req.session as any).userId = user.id;
+      // Reset failed login attempts on successful login
+      resetFailedLogin(clientIp);
       
-      res.json({
-        success: true,
-        user: {
-          id: user.id,
-          email: user.email,
-          role: user.role
+      // Regenerate session ID for security
+      req.session.regenerate((err) => {
+        if (err) {
+          console.error('Session regeneration error:', err);
+          return res.status(500).json({ message: "Erreur de session" });
         }
+        
+        // Set session
+        (req.session as any).userId = user.id;
+        (req.session as any).loginTime = Date.now();
+        
+        res.json({
+          success: true,
+          user: {
+            id: user.id,
+            email: user.email,
+            role: user.role
+          }
+        });
       });
 
     } catch (error) {
@@ -139,25 +170,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin logout
+  // Admin logout with session cleanup
   app.post("/api/admin/logout", (req, res) => {
+    const sessionId = req.sessionID;
     req.session.destroy((err) => {
       if (err) {
+        console.error('Logout error:', err);
         return res.status(500).json({ message: "Erreur de déconnexion" });
       }
+      res.clearCookie('innovision.sid');
+      console.log(`Admin logout successful for session: ${sessionId}`);
       res.json({ success: true });
     });
   });
 
+  // Session validation middleware for admin routes
+  const requireAuth = (req: any, res: any, next: any) => {
+    const userId = req.session?.userId;
+    const loginTime = req.session?.loginTime;
+    
+    if (!userId) {
+      return res.status(401).json({ message: "Non authentifié" });
+    }
+    
+    // Check session age (24 hours max)
+    if (loginTime && (Date.now() - loginTime) > 24 * 60 * 60 * 1000) {
+      req.session.destroy(() => {});
+      return res.status(401).json({ message: "Session expirée" });
+    }
+    
+    next();
+  };
+
   // Get current admin user
-  app.get("/api/admin/me", async (req, res) => {
+  app.get("/api/admin/me", requireAuth, async (req, res) => {
     try {
       const userId = (req.session as any)?.userId;
-      if (!userId) {
-        return res.status(401).json({ message: "Non authentifié" });
-      }
-
       const user = await storage.getUser(userId);
+      
       if (!user) {
         return res.status(401).json({ message: "Utilisateur non trouvé" });
       }
@@ -175,13 +225,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get applicants (admin only)
-  app.get("/api/admin/applicants", async (req, res) => {
+  app.get("/api/admin/applicants", requireAuth, adminRateLimit, async (req, res) => {
     try {
-      const userId = (req.session as any)?.userId;
-      if (!userId) {
-        return res.status(401).json({ message: "Non authentifié" });
-      }
-
       const {
         search,
         wilaya,
@@ -217,13 +262,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get admin stats
-  app.get("/api/admin/stats", async (req, res) => {
+  app.get("/api/admin/stats", requireAuth, adminRateLimit, async (req, res) => {
     try {
-      const userId = (req.session as any)?.userId;
-      if (!userId) {
-        return res.status(401).json({ message: "Non authentifié" });
-      }
-
       const stats = await storage.getApplicantStats();
       res.json(stats);
 
@@ -234,14 +274,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Resend email for applicant
-  app.post("/api/admin/applicants/:id/resend-email", async (req, res) => {
+  app.post("/api/admin/applicants/:id/resend-email", requireAuth, adminRateLimit, async (req, res) => {
     try {
-      const userId = (req.session as any)?.userId;
-      if (!userId) {
-        return res.status(401).json({ message: "Non authentifié" });
-      }
-
       const { id } = req.params;
+      
+      // Validate UUID format
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+        return res.status(400).json({ message: "ID invalide" });
+      }
+      
       const applicant = await storage.getApplicant(id);
       
       if (!applicant) {

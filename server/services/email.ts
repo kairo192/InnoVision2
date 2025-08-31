@@ -48,7 +48,7 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
       <body>
         <div class="container">
           <div class="header">
-            <div class="logo">💡</div>
+            <div class="logo">🏫</div>
             <h1>InnoVision School</h1>
             <p>Confirmation d'inscription</p>
           </div>

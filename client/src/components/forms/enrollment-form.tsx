@@ -28,6 +28,7 @@ export function EnrollmentForm() {
 
   const form = useForm<EnrollmentForm>({
     resolver: zodResolver(insertApplicantSchema),
+    mode: "onChange", // Enable real-time validation
     defaultValues: {
       fullName: "",
       email: "",
@@ -53,7 +54,7 @@ export function EnrollmentForm() {
       setAge(calculatedAge);
       
       if (calculatedAge >= 8) {
-        const courses = getAvailableCourses(calculatedAge);
+        const courses = getAvailableCourses(calculatedAge).filter(course => course && course.trim() !== '');
         setAvailableCourses(courses);
         // Clear course selection if it's no longer valid
         const currentCourse = form.getValues("course");
@@ -214,16 +215,28 @@ export function EnrollmentForm() {
             <Label htmlFor="wilaya" className="text-sm font-medium text-primary">
               {t('form.wilaya')} *
             </Label>
-            <Select onValueChange={(value) => form.setValue("wilaya", value)} data-testid="select-wilaya">
+            <Select 
+              value={form.watch("wilaya") || undefined}
+              onValueChange={(value) => {
+                if (value && value.trim() !== '') {
+                  form.setValue("wilaya", value);
+                  form.trigger("wilaya"); // Trigger validation
+                }
+              }} 
+              data-testid="select-wilaya"
+            >
               <SelectTrigger className="w-full px-4 py-3 rounded-xl border border-border bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                 <SelectValue placeholder={t('form.selectWilaya')} />
               </SelectTrigger>
               <SelectContent>
-                {wilayas.map((wilaya) => (
-                  <SelectItem key={wilaya.name} value={wilaya.name}>
-                    {wilaya.code} - {wilaya.name}
-                  </SelectItem>
-                ))}
+                {wilayas
+                  .filter(wilaya => wilaya.name && wilaya.name.trim() !== '')
+                  .map((wilaya) => (
+                    <SelectItem key={wilaya.name} value={wilaya.name}>
+                      {wilaya.code} - {wilaya.name}
+                    </SelectItem>
+                  ))
+                }
               </SelectContent>
             </Select>
             {form.formState.errors.wilaya && (
@@ -259,7 +272,10 @@ export function EnrollmentForm() {
               {t('form.course')} *
             </Label>
             <Select 
-              onValueChange={(value) => form.setValue("course", value)}
+              onValueChange={(value) => {
+                form.setValue("course", value);
+                form.trigger("course"); // Trigger validation
+              }}
               disabled={availableCourses.length === 0}
               data-testid="select-course"
             >
@@ -267,11 +283,14 @@ export function EnrollmentForm() {
                 <SelectValue placeholder={t('form.selectCourse')} />
               </SelectTrigger>
               <SelectContent>
-                {availableCourses.map((course) => (
-                  <SelectItem key={course} value={course}>
-                    {course}
-                  </SelectItem>
-                ))}
+                {availableCourses
+                  .filter(course => course && course.trim() !== '')
+                  .map((course) => (
+                    <SelectItem key={course} value={course}>
+                      {course}
+                    </SelectItem>
+                  ))
+                }
               </SelectContent>
             </Select>
             {form.formState.errors.course && (
@@ -290,7 +309,10 @@ export function EnrollmentForm() {
           <Checkbox
             id="consent"
             checked={form.watch("consent")}
-            onCheckedChange={(checked) => form.setValue("consent", checked as boolean)}
+            onCheckedChange={(checked) => {
+              form.setValue("consent", checked as boolean);
+              form.trigger("consent"); // Trigger validation
+            }}
             className="mt-1"
             data-testid="checkbox-consent"
           />
@@ -309,7 +331,17 @@ export function EnrollmentForm() {
           <Button
             type="submit"
             className="bg-accent hover:bg-accent/90 disabled:bg-muted disabled:cursor-not-allowed text-accent-foreground px-12 py-4 rounded-xl font-semibold text-lg transition-all hover:scale-105 shadow-lg min-w-[200px]"
-            disabled={enrollmentMutation.isPending || !form.formState.isValid || age !== null && age < 8}
+            disabled={
+              enrollmentMutation.isPending || 
+              (age !== null && age < 8) ||
+              !form.watch("fullName") ||
+              !form.watch("email") ||
+              !form.watch("birthDate") ||
+              !form.watch("wilaya") ||
+              !form.watch("phone") ||
+              !form.watch("course") ||
+              !form.watch("consent")
+            }
             data-testid="button-submit"
           >
             {enrollmentMutation.isPending ? (

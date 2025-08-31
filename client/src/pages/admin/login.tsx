@@ -9,10 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { GlassCard } from "@/components/ui/glass-card";
+import { Logo } from "@/components/ui/logo";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/hooks/use-i18n";
 import { apiRequest } from "@/lib/queryClient";
-import { Lightbulb, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("Email invalide"),
@@ -76,9 +77,7 @@ export default function AdminLogin() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center animate-pulse-glow">
-                <Lightbulb className="text-white text-2xl" />
-              </div>
+              <Logo size="lg" className="animate-pulse-glow" />
             </div>
             <h1 className="text-2xl font-bold text-primary mb-2" data-testid="login-title">
               {t('admin.login.title')}

@@ -1,5 +1,6 @@
 import { useI18n } from "@/hooks/use-i18n";
-import { Lightbulb, MapPin, Phone, Mail } from "lucide-react";
+import { Logo } from "@/components/ui/logo";
+import { MapPin, Phone, Mail } from "lucide-react";
 import { FaFacebook, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa";
 
 export function Footer() {
@@ -12,9 +13,7 @@ export function Footer() {
           {/* School Info */}
           <div className="text-center lg:text-left">
             <div className="flex items-center justify-center lg:justify-start space-x-3 mb-6">
-              <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center">
-                <Lightbulb className="text-white text-xl" />
-              </div>
+              <Logo size="md" />
               <span className="text-2xl font-bold text-white">InnoVision School</span>
             </div>
             <p className="text-white/80 leading-relaxed mb-6" data-testid="footer-description">

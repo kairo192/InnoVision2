@@ -1,21 +1,60 @@
+import 'dotenv/config';
+import crypto from 'crypto';
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { env, validateEnv } from "./env";
+import { securityHeaders, rateLimiter, validateInput } from "./middleware/security";
+
+// Validate environment variables
+if (!validateEnv()) {
+  process.exit(1);
+}
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
-// Session configuration
+// Enable trust proxy for production environments
+if (env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
+// Security middleware
+app.use(securityHeaders);
+app.use(validateInput);
+
+// Dynamic rate limiting based on environment
+const maxRequests = parseInt(env.MAX_REQUESTS_PER_WINDOW || '100', 10);
+const windowMs = parseInt(env.RATE_LIMIT_WINDOW_MS || '900000', 10); // 15 minutes
+app.use(rateLimiter(maxRequests, windowMs));
+
+// Body parsing with size limits
+app.use(express.json({ 
+  limit: env.NODE_ENV === 'production' ? '5mb' : '10mb',
+  type: ['application/json', 'text/plain']
+}));
+app.use(express.urlencoded({ 
+  extended: false, 
+  limit: env.NODE_ENV === 'production' ? '5mb' : '10mb'
+}));
+
+// Enhanced session configuration
+const sessionMaxAge = parseInt(env.SESSION_MAX_AGE || '86400000', 10); // 24 hours default
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'innovision-school-secret-key',
+  secret: env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  name: 'innovision.sid', // Custom session name
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: sessionMaxAge,
+    sameSite: env.NODE_ENV === 'production' ? 'strict' : 'lax'
+  },
+  rolling: true, // Reset expiration on activity
+  genid: () => {
+    // Generate cryptographically secure session IDs
+    return crypto.randomBytes(16).toString('hex');
   }
 }));
 
@@ -73,12 +112,14 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
+  const port = parseInt(env.PORT || '5000', 10);
+  const host = env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+  
+  server.listen(port, host, () => {
+    log(`🚀 Server running on ${host}:${port}`);
+    log(`📖 Environment: ${env.NODE_ENV}`);
+    if (env.NODE_ENV === 'production') {
+      log('🔒 Production security measures active');
+    }
   });
 })();

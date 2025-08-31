@@ -89,9 +89,6 @@ export class DatabaseStorage implements IStorage {
       sortOrder = 'desc'
     } = filters;
 
-    let query = db.select().from(applicants);
-    let countQuery = db.select({ count: count() }).from(applicants);
-
     const conditions = [];
 
     if (search) {
@@ -123,10 +120,15 @@ export class DatabaseStorage implements IStorage {
       conditions.push(lte(applicants.createdAt, new Date(dateTo)));
     }
 
+    // Build base queries
+    let query = db.select().from(applicants);
+    let countQuery = db.select({ count: count() }).from(applicants);
+
+    // Apply filters
     if (conditions.length > 0) {
       const whereCondition = conditions.length === 1 ? conditions[0] : and(...conditions);
-      query = query.where(whereCondition);
-      countQuery = countQuery.where(whereCondition);
+      query = query.where(whereCondition) as typeof query;
+      countQuery = countQuery.where(whereCondition) as typeof countQuery;
     }
 
     // Add sorting
@@ -134,10 +136,10 @@ export class DatabaseStorage implements IStorage {
                       sortBy === 'fullName' ? applicants.fullName :
                       applicants.age;
     
-    query = query.orderBy(sortOrder === 'asc' ? asc(sortColumn) : desc(sortColumn));
+    query = query.orderBy(sortOrder === 'asc' ? asc(sortColumn) : desc(sortColumn)) as typeof query;
 
     // Add pagination
-    query = query.limit(limit).offset(offset);
+    query = query.limit(limit).offset(offset) as typeof query;
 
     const [applicantsResult, [{ count: total }]] = await Promise.all([
       query,

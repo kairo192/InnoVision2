@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { Logo } from "@/components/ui/logo";
 import { useI18n } from "@/hooks/use-i18n";
-import { Lightbulb, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 export function Navbar() {
   const { t } = useI18n();
@@ -23,9 +24,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-accent rounded-full flex items-center justify-center">
-              <Lightbulb className="text-white text-lg lg:text-xl" />
-            </div>
+            <Logo size="md" />
             <span className="text-lg lg:text-xl font-bold text-primary">InnoVision School</span>
           </Link>
           
